@@ -11,7 +11,422 @@
 
   :root {
     --bg: #F7F8FC;
+    --surface: #FFFFFF;<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2027-28 Teaching Assignment Timeline</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F8FC;
     --surface: #FFFFFF;
+    --border: #E2E5EF;
+    --text: #1A1D2E;
+    --muted: #6B7194;
+    --accent: #3B4FCC;
+    --accent-light: #EEF1FF;
+    --hicc: #7C3AED;
+    --hicc-light: #F3EFFE;
+    --visc: #0891B2;
+    --visc-light: #E0F6FC;
+    --faculty: #059669;
+    --faculty-light: #DCFCE7;
+    --other: #6B7194;
+    --other-light: #F1F2F8;
+    --passed: #DC2626;
+    --passed-light: #FEF2F2;
+    --upcoming: #EA580C;
+    --upcoming-light: #FFF7ED;
+    --line: #D1D5E8;
+    --shadow: 0 1px 4px rgba(26,29,46,0.08), 0 4px 16px rgba(26,29,46,0.06);
+    --gantt-bar: #EA580C;
+  }
+
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
+
+  /* HEADER */
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 24px 40px 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(26,29,46,0.06); }
+  .header-top { margin-bottom: 16px; }
+  .header-sub { font-size: 12px; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
+  header h1 { font-family: 'DM Serif Display', Georgia, serif; font-size: 24px; font-weight: 400; letter-spacing: -0.3px; color: var(--text); line-height: 1.2; }
+
+  /* TABS */
+  .tab-bar { display: flex; gap: 0; border-top: 1px solid var(--border); margin: 0 -40px; padding: 0 40px; }
+  .tab-btn { display: inline-flex; align-items: center; gap: 7px; padding: 12px 18px; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--muted); background: none; border: none; border-bottom: 2.5px solid transparent; cursor: pointer; transition: all 0.15s; margin-bottom: -1px; white-space: nowrap; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-count { font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 20px; background: var(--bg); color: var(--muted); }
+  .tab-btn.active .tab-count { background: var(--accent-light); color: var(--accent); }
+
+  /* PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* GANTT */
+  .gantt-wrap { padding: 32px 24px 80px; max-width: 1100px; margin: 0 auto; overflow-x: auto; }
+  .gantt-intro { font-size: 13px; color: var(--muted); margin-bottom: 24px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .gantt-legend-item { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text); }
+  .gantt-legend-bar { width: 24px; height: 12px; border-radius: 3px; background: var(--gantt-bar); }
+
+  .gantt-table { width: 100%; border-collapse: collapse; min-width: 700px; }
+  .gantt-table th { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 8px 0; text-align: center; border-bottom: 2px solid var(--border); white-space: nowrap; }
+  .gantt-table th.task-col { text-align: left; padding-left: 0; min-width: 220px; }
+  .gantt-table th.year-header { text-align: left; font-size: 13px; font-weight: 700; color: var(--text); letter-spacing: 0; text-transform: none; padding-bottom: 4px; border-bottom: none; }
+  .gantt-table tr.year-row th { border-bottom: none; padding-bottom: 2px; }
+  .gantt-table tr.month-row th { padding-top: 2px; }
+  .gantt-table td { padding: 4px 0; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .gantt-table td.task-label { font-size: 13px; color: var(--text); font-weight: 500; padding-right: 16px; white-space: nowrap; }
+  .gantt-table td.month-cell { position: relative; padding: 4px 0; }
+  .gantt-table tbody tr:hover td { background: #F0F2FA; }
+  .gantt-table tbody tr:first-child td { border-top: 2px solid var(--border); }
+  .gantt-table td.year-div, .gantt-table th.year-div { border-left: 2px solid var(--border); }
+
+  /* bar: full-width with no gap so adjacent months connect */
+  .gantt-bar-fill { display: block; height: 24px; background: var(--gantt-bar); opacity: 0.82; width: 100%; border-radius: 0; }
+  /* round only the leftmost and rightmost ends of a run — set via JS */
+  .gantt-bar-fill.bar-left  { border-top-left-radius: 4px; border-bottom-left-radius: 4px; }
+  .gantt-bar-fill.bar-right { border-top-right-radius: 4px; border-bottom-right-radius: 4px; }
+  .gantt-bar-fill:hover { opacity: 1; }
+
+  /* DEADLINES CONTROLS */
+  .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 40px; }
+  .controls-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+  .filter-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface); font-family: inherit; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .filter-btn:hover { border-color: #ABAFC8; color: var(--text); }
+  .filter-btn.active[data-role="all"]     { background: var(--accent);  border-color: var(--accent);  color: #fff; }
+  .filter-btn.active[data-role="hicc"]    { background: var(--hicc);    border-color: var(--hicc);    color: #fff; }
+  .filter-btn.active[data-role="visc"]    { background: var(--visc);    border-color: var(--visc);    color: #fff; }
+  .filter-btn.active[data-role="faculty"] { background: var(--faculty); border-color: var(--faculty); color: #fff; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+  .sort-select { padding: 6px 28px 6px 12px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236B7194'/%3E%3C/svg%3E") no-repeat right 10px center; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--text); cursor: pointer; appearance: none; }
+
+  main { max-width: 860px; margin: 0 auto; padding: 36px 24px 80px; }
+
+  .stats-bar { display: flex; gap: 14px; margin-bottom: 28px; flex-wrap: wrap; }
+  .stat-chip { display: flex; align-items: center; gap: 7px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 9px 16px; font-size: 13px; }
+  .stat-chip strong { font-weight: 700; font-size: 17px; }
+
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 26px; font-size: 12px; color: var(--muted); align-items: center; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid; }
+
+  /* TIMELINE */
+  .timeline { position: relative; }
+  .timeline::before { content: ''; position: absolute; left: 112px; top: 0; bottom: 0; width: 2px; background: var(--line); }
+  .month-group { margin-bottom: 8px; }
+  .month-label { position: sticky; top: 130px; z-index: 10; display: flex; align-items: center; padding: 14px 0 6px; }
+  .month-label-text { width: 102px; text-align: right; padding-right: 20px; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; flex-shrink: 0; background: var(--bg); }
+  .month-label-line { flex: 1; height: 1px; background: var(--border); margin-left: 18px; }
+  .timeline-item { display: flex; align-items: flex-start; position: relative; margin-bottom: 14px; }
+  .item-date { width: 102px; flex-shrink: 0; text-align: right; padding-right: 20px; padding-top: 18px; font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.3; }
+  .item-date .day { display: block; font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; font-family: 'DM Serif Display', Georgia, serif; }
+  .item-dot { position: absolute; left: 106px; top: 22px; width: 14px; height: 14px; border-radius: 50%; background: var(--surface); border: 2.5px solid var(--accent); z-index: 1; }
+  .item-dot.passed   { border-color: var(--passed); }
+  .item-dot.upcoming { border-color: var(--upcoming); }
+  .item-dot.tbd      { border-color: var(--other); }
+  .item-card { margin-left: 30px; flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px 14px; box-shadow: var(--shadow); transition: transform 0.15s, box-shadow 0.15s; }
+  .item-card:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(26,29,46,0.1), 0 8px 24px rgba(26,29,46,0.08); }
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+  .card-task { font-size: 15px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .status-badge { flex-shrink: 0; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+  .status-passed   { background: var(--passed-light);   color: var(--passed); }
+  .status-upcoming { background: var(--upcoming-light); color: var(--upcoming); }
+  .status-tbd      { background: var(--other-light);    color: var(--other); }
+  .status-ok       { background: var(--accent-light);   color: var(--accent); }
+  .card-milestone { font-size: 13px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; white-space: pre-line; }
+  .card-footer { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .role-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; letter-spacing: 0.02em; }
+  .role-hicc    { background: var(--hicc-light);    color: var(--hicc); }
+  .role-visc    { background: var(--visc-light);    color: var(--visc); }
+  .role-faculty { background: var(--faculty-light); color: var(--faculty); }
+  .role-other   { background: var(--other-light);   color: var(--other); }
+  .task-opens { margin-left: auto; font-size: 11px; color: var(--muted); }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); display: none; }
+
+  @media (max-width: 600px) {
+    header { padding: 18px 16px 0; }
+    .tab-bar { margin: 0 -16px; padding: 0 16px; }
+    .controls { padding: 10px 16px; }
+    main { padding: 24px 12px 60px; }
+    .timeline::before { left: 76px; }
+    .item-date { width: 68px; padding-right: 14px; }
+    .item-date .day { font-size: 18px; }
+    .item-dot { left: 70px; }
+    .item-card { margin-left: 22px; }
+    .month-label-text { width: 68px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <p class="header-sub">UCVM</p>
+    <h1>2027-28 Teaching Assignment Timeline</h1>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="gantt">Overall Timeline</button>
+    <button class="tab-btn" data-tab="deadlines">Task Deadlines <span class="tab-count">24</span></button>
+  </div>
+</header>
+
+<!-- GANTT PANEL -->
+<div id="panel-gantt" class="panel active">
+  <div class="gantt-wrap">
+    <div class="gantt-intro">
+      <span style="font-weight:600;color:var(--text)">2027-28 Teaching Assignment — Overall Timeline</span>
+      <span style="width:1px;height:16px;background:var(--border);display:inline-block"></span>
+      <span class="gantt-legend-item"><span class="gantt-legend-bar"></span> Active period</span>
+      <span style="font-size:12px;color:var(--muted);margin-left:auto">Jul 2026 – Apr 2027</span>
+    </div>
+    <table class="gantt-table">
+      <thead>
+        <tr class="year-row">
+          <th class="task-col year-header" rowspan="2">Task</th>
+          <th class="year-header" colspan="3">2026</th>
+          <th class="year-header year-div" colspan="7">2027</th>
+        </tr>
+        <tr class="month-row">
+          <th>Jul</th><th>Aug</th><th>Sep</th>
+          <th>Oct</th><th>Nov</th><th>Dec</th>
+          <th class="year-div">Jan</th><th>Feb</th><th>Mar</th><th>Apr</th>
+        </tr>
+      </thead>
+      <tbody id="gantt-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- DEADLINES PANEL -->
+<div id="panel-deadlines" class="panel">
+  <div class="controls">
+    <span class="controls-label">Filter by Role</span>
+    <button class="filter-btn active" data-role="all">All</button>
+    <button class="filter-btn" data-role="hicc"><span class="dot" style="background:var(--hicc)"></span> HICC / CC</button>
+    <button class="filter-btn" data-role="visc"><span class="dot" style="background:var(--visc)"></span> VISC</button>
+    <button class="filter-btn" data-role="faculty"><span class="dot" style="background:var(--faculty)"></span> Faculty</button>
+    <div class="sep"></div>
+    <span class="controls-label">Sort</span>
+    <select class="sort-select" id="sort-select">
+      <option value="asc">Earliest first</option>
+      <option value="desc">Latest first</option>
+    </select>
+  </div>
+  <main>
+    <div class="stats-bar" id="stats-bar"></div>
+    <div class="legend">
+      <span style="font-weight:600;color:var(--text)">Deadline status:</span>
+      <span class="legend-item"><span class="legend-dot" style="border-color:var(--passed)"></span> Passed</span>
+      <span class="legend-item"><span class="legend-dot" style="border-color:var(--upcoming)"></span> Due within 14 days</span>
+      <span class="legend-item"><span class="legend-dot" style="border-color:var(--accent)"></span> Upcoming</span>
+      <span class="legend-item"><span class="legend-dot" style="border-color:var(--other)"></span> TBD</span>
+    </div>
+    <div class="timeline" id="timeline"></div>
+    <div class="empty-state" id="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <p>No deadlines match this filter.</p>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── TABS ──
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ── GANTT ──
+// Month index: 0=Jul2026,1=Aug,2=Sep,3=Oct,4=Nov,5=Dec,6=Jan2027,7=Feb,8=Mar,9=Apr
+const GANTT_ROWS = [
+  { task: "HICCs/VISCs suggest topics and recommend session instructors", months: [0,1,2,3] },
+  { task: "Faculty self-nominations for session instruction",             months: [2,3] },
+  { task: "ADFADs assign teaching and conduct quality assurance",         months: [3,4,5,6] },
+  { task: "ADC, VISC, and HICC/CC review initial assignments",           months: [6,7] },
+  { task: "Initial teaching assignments distributed",                     months: [7] },
+  { task: "Faculty feedback and compatibility review",                    months: [7,8] },
+  { task: "Teaching assignments finalized",                               months: [8,9] },
+  { task: "Swap process",                                                 months: [9] },
+];
+const TOTAL_MONTHS = 10;
+
+(function buildGantt() {
+  const tbody = document.getElementById('gantt-body');
+  GANTT_ROWS.forEach(row => {
+    const tr = document.createElement('tr');
+    const tdLabel = document.createElement('td');
+    tdLabel.className = 'task-label';
+    tdLabel.textContent = row.task;
+    tr.appendChild(tdLabel);
+
+    const sortedMonths = row.months.slice().sort((a,b)=>a-b);
+    const minM = sortedMonths[0], maxM = sortedMonths[sortedMonths.length-1];
+
+    for (let m = 0; m < TOTAL_MONTHS; m++) {
+      const td = document.createElement('td');
+      td.className = 'month-cell' + (m === 6 ? ' year-div' : '');
+      if (row.months.includes(m)) {
+        const bar = document.createElement('span');
+        bar.className = 'gantt-bar-fill';
+        if (m === minM) bar.classList.add('bar-left');
+        if (m === maxM) bar.classList.add('bar-right');
+        bar.title = row.task;
+        td.appendChild(bar);
+      }
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  });
+})();
+
+// ── DEADLINES ──
+const DATA = [
+  {task:"Complete Course Outline (Year 1 & Year 3) - 2026-27",milestone:"Ensure Year 1 and Year 3 course outlines (previously called course syllabi) are prepared",deadline:"2026-06-15",comm_date:null,hicc_cc:true,visc:false,faculty:false,other:""},
+  {task:"Complete Course Outline (Year 2) - 2026-27",milestone:"Ensure Year 2 course outlines (previously called course syllabi) are prepared",deadline:"2026-07-20",comm_date:null,hicc_cc:true,visc:false,faculty:false,other:""},
+  {task:"Hold Year Committee Meeting 1",milestone:"Deadline to hold Year Committee Meeting 1\n> Review Assessment Calendar",deadline:"2026-07-31",comm_date:null,hicc_cc:true,visc:false,faculty:false,other:"DVMPO Team"},
+  {task:"Submit Faculty Led Rotations Requests",milestone:"Faculty led rotations submission deadline",deadline:"2026-09-14",comm_date:"2026-08-24",hicc_cc:false,visc:false,faculty:true,other:""},
+  {task:"Identify & Review Course Topics in Timetable",milestone:"2027-2028 Year 1-3 timetables are provided to HICCs and VISCs. HICCs to identify or update the course topics. HICCs and VISCs to input instructor recommendations.",deadline:"2026-09-18",comm_date:"2026-07-13",hicc_cc:true,visc:true,faculty:false,other:""},
+  {task:"Year 1 & Year 2 Self-Nomination Process",milestone:"2027-2028 Years 1 and 2 pre-populated timetables provided to faculty\n> Faculty self-nominate for Years 1 and 2",deadline:"2026-09-30",comm_date:"2026-07-13",hicc_cc:false,visc:false,faculty:true,other:""},
+  {task:"HICC and VISC Timetable Review",milestone:"HICCs and VISCs review timetables and ensure all topics and faculty suggestions are entered",deadline:"2026-09-30",comm_date:"2026-09-21",hicc_cc:true,visc:true,faculty:false,other:""},
+  {task:"Labs Review",milestone:"Check 2027-2028 timetable labs for capacity, changes, and resource conflicts",deadline:"2026-10-16",comm_date:null,hicc_cc:true,visc:false,faculty:true,other:"Lab Team"},
+  {task:"Year 3 & Year 4 Self-Nomination Process",milestone:"2027-2028 timetables (Year 3 and 4) provided to faculty\n> Faculty self-nominate for Years 3 and 4",deadline:"2026-10-16",comm_date:"2026-10-01",hicc_cc:false,visc:false,faculty:true,other:""},
+  {task:"Submit Absence From Campus Forms",milestone:"Absence From Campus Form deadline\n> Requests submitted by this date, if approved, are guaranteed to be considered in the assignment process\n> Requests submitted after this date will still be accepted, but may need to be addressed through swaps",deadline:"2026-10-31",comm_date:null,hicc_cc:false,visc:false,faculty:true,other:""},
+  {task:"Request Instructor Evaluations",milestone:"Submit instructor evaluation requests for fall semester",deadline:"2026-11-06",comm_date:"2026-08-31",hicc_cc:false,visc:false,faculty:true,other:""},
+  {task:"Review & Submit Final Exam Grades",milestone:"Submit final adjusted grades on D2L for admins to upload to PeopleSoft",deadline:"2027-01-05",comm_date:null,hicc_cc:true,visc:false,faculty:false,other:""},
+  {task:"Hold Year Committee Meeting 2",milestone:"Deadline to hold Year Committee Meeting 2\n> Review fall course-by-course progress\n> Review course evaluation survey\n> End of semester review and improvement",deadline:"2027-02-05",comm_date:null,hicc_cc:true,visc:false,faculty:false,other:"DVMPO Team"},
+  {task:"HICC and VISC Assignment Review",milestone:"HICCs, VISCs, and ADCs review initial teaching assignments prior to release to faculty",deadline:"2027-02-05",comm_date:"2027-01-25",hicc_cc:true,visc:true,faculty:false,other:"ADCs"},
+  {task:"Complete Course Outline (Year 4) - 2027-28",milestone:"Ensure Year 4 course outlines (previously called course syllabi) are prepared",deadline:"2027-03-05",comm_date:"2027-02-02",hicc_cc:true,visc:false,faculty:false,other:""},
+  {task:"Request Instructor Evaluations",milestone:"Submit instructor evaluation requests for winter semester",deadline:"2027-03-05",comm_date:"2026-08-31",hicc_cc:false,visc:false,faculty:true,other:""},
+  {task:"Assignment Compatibility Review Process",milestone:"Faculty review initial teaching assignment and propose solutions for identified compatibility concerns",deadline:"2027-03-12",comm_date:"2027-03-01",hicc_cc:true,visc:true,faculty:true,other:""},
+  {task:"Swap Process",milestone:"",deadline:"2027-04-20",comm_date:"2027-04-05",hicc_cc:false,visc:false,faculty:false,other:"DVMPO Team, ADFAD Team"},
+  {task:"Request Graduate Teaching Assistants (GAT)",milestone:"Requests for GAT support due",deadline:"2027-04-30",comm_date:"2027-04-01",hicc_cc:true,visc:false,faculty:false,other:""},
+  {task:"Review & Submit Final Exam Grades",milestone:"Submit final adjusted grades on D2L for admins to upload to PeopleSoft",deadline:"2027-05-04",comm_date:null,hicc_cc:true,visc:false,faculty:false,other:""},
+  {task:"Submit Individual Learning Objectives",milestone:"For the 2027-2028 year, list (by lab topic) the individual learning objectives which are being met by use of cadaver, sim, live animal, define models for each objective (CCAC licencing, Animal Care approval)",deadline:"2027-05-15",comm_date:null,hicc_cc:true,visc:false,faculty:false,other:"Lab Team"},
+  {task:"Hold Year Committee Meeting 3",milestone:"Deadline to hold Year Committee Meeting 3\n> Review winter course-by-course progress\n> Review course evaluation survey\n> End of semester review and improvement",deadline:"2027-06-15",comm_date:null,hicc_cc:true,visc:false,faculty:false,other:"DVMPO Team"},
+  {task:"Blueprinting & Curriculum Mapping",milestone:"Develop the course assessment plan to ensure topics are assessed and course objectives are met. Map each session\u2019s learning objectives to the relevant course outcomes.",deadline:"2027-06-30",comm_date:"2027-05-03",hicc_cc:true,visc:false,faculty:true,other:"DVMPO Team, ADCs"},
+  {task:"Complete Course Outline (Year 1-3) - 2027-28",milestone:"Ensure Year 1-3 course outline for 2027-28 are prepared",deadline:"2027-06-30",comm_date:"2027-06-01",hicc_cc:true,visc:false,faculty:false,other:"DVMPO Team, ADCs"},
+];
+
+const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function parseDeadline(d) {
+  if (!d) return null;
+  return new Date(d + "T00:00:00");
+}
+function getStatus(deadline) {
+  const dt = parseDeadline(deadline);
+  if (!dt) return "tbd";
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diff = (dt - today) / 86400000;
+  if (diff < 0) return "passed";
+  if (diff <= 14) return "upcoming";
+  return "ok";
+}
+function formatDate(deadline) {
+  const dt = parseDeadline(deadline);
+  if (!dt) return null;
+  return { month: MONTH_NAMES[dt.getMonth()] + " " + dt.getFullYear(), day: dt.getDate() };
+}
+function formatCommDate(d) {
+  if (!d) return null;
+  const dt = parseDeadline(d);
+  if (!dt) return null;
+  return dt.toLocaleDateString("en-CA", {month:"short", day:"numeric"});
+}
+function roleMatches(item, role) {
+  if (role === "all") return true;
+  if (role === "hicc")    return item.hicc_cc;
+  if (role === "visc")    return item.visc;
+  if (role === "faculty") return item.faculty;
+  return false;
+}
+function getSortKey(item) {
+  const dt = parseDeadline(item.deadline);
+  return dt ? dt.getTime() : Infinity;
+}
+
+let activeRole = "all", sortDir = "asc";
+
+function render() {
+  const timeline = document.getElementById("timeline");
+  const emptyState = document.getElementById("empty-state");
+  const statsBar = document.getElementById("stats-bar");
+  const sorted = [...DATA].sort((a,b) => { const d = getSortKey(a)-getSortKey(b); return sortDir==="asc"?d:-d; });
+  const visible = sorted.filter(item => roleMatches(item, activeRole));
+  const passed   = visible.filter(i => getStatus(i.deadline) === "passed").length;
+  const upcoming = visible.filter(i => getStatus(i.deadline) === "upcoming").length;
+  statsBar.innerHTML = `
+    <div class="stat-chip"><strong>${visible.length}</strong> deadlines</div>
+    ${passed   ? `<div class="stat-chip" style="border-color:var(--passed);color:var(--passed)"><strong>${passed}</strong> passed</div>` : ""}
+    ${upcoming ? `<div class="stat-chip" style="border-color:var(--upcoming);color:var(--upcoming)"><strong>${upcoming}</strong> due soon</div>` : ""}
+  `;
+  if (!visible.length) { timeline.innerHTML = ""; emptyState.style.display = "block"; return; }
+  emptyState.style.display = "none";
+
+  const groups = {}, groupOrder = [];
+  visible.forEach(item => {
+    const fd = formatDate(item.deadline);
+    const key = fd ? fd.month : "TBD";
+    if (!groups[key]) { groups[key] = []; groupOrder.push(key); }
+    groups[key].push(item);
+  });
+  const seen = new Set();
+  const uniqueOrder = groupOrder.filter(k => seen.has(k) ? false : seen.add(k));
+
+  let html = "";
+  uniqueOrder.forEach(month => {
+    html += `<div class="month-group"><div class="month-label"><span class="month-label-text">${month}</span><div class="month-label-line"></div></div>`;
+    groups[month].forEach(item => {
+      const fd = formatDate(item.deadline);
+      const status = getStatus(item.deadline);
+      const statusLabel = {passed:"Passed",upcoming:"Due soon",tbd:"TBD",ok:"Upcoming"}[status];
+      const cd = formatCommDate(item.comm_date);
+      const roles = [];
+      if (item.hicc_cc) roles.push(`<span class="role-tag role-hicc">HICC / CC</span>`);
+      if (item.visc)    roles.push(`<span class="role-tag role-visc">VISC</span>`);
+      if (item.faculty) roles.push(`<span class="role-tag role-faculty">Faculty</span>`);
+      if (item.other)   roles.push(`<span class="role-tag role-other">${item.other}</span>`);
+      html += `<div class="timeline-item">
+        <div class="item-date">${fd ? `<span class="day">${fd.day}</span><span>${MONTH_NAMES[new Date(item.deadline).getMonth()]}</span>` : `<span style="font-size:11px;line-height:1.4">TBD</span>`}</div>
+        <div class="item-dot ${status}"></div>
+        <div class="item-card">
+          <div class="card-top"><div class="card-task">${item.task}</div><span class="status-badge status-${status}">${statusLabel}</span></div>
+          ${item.milestone ? `<div class="card-milestone">${item.milestone}</div>` : ""}
+          <div class="card-footer">
+            ${roles.join("")}
+            ${cd ? `<span class="task-opens">Task Opens ${cd}</span>` : ""}
+          </div>
+        </div>
+      </div>`;
+    });
+    html += "</div>";
+  });
+  timeline.innerHTML = html;
+}
+
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    activeRole = btn.dataset.role;
+    render();
+  });
+});
+document.getElementById("sort-select").addEventListener("change", e => { sortDir = e.target.value; render(); });
+render();
+</script>
+</body>
+</html>
+
     --border: #E2E5EF;
     --text: #1A1D2E;
     --muted: #6B7194;
